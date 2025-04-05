@@ -8,13 +8,18 @@ export const getConsommationJournaliere = async (req: AuthRequest, res: Response
   const dateDebut = debut ? new Date(debut as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const dateFin = fin ? new Date(fin as string) : new Date();
   
-  const stats = await analyticsService.getConsommationParJour(
-    req.user!.restaurantId,
-    dateDebut,
-    dateFin
-  );
-  
-  res.json(stats);
+  try {
+    const stats = await analyticsService.getConsommationParJour(
+      req.user!.restaurantId,
+      dateDebut,
+      dateFin
+    );
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la consommation:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des données' });
+  }
 };
 
 export const getAffluenceJournaliere = async (req: AuthRequest, res: Response): Promise<void> => {
@@ -23,13 +28,18 @@ export const getAffluenceJournaliere = async (req: AuthRequest, res: Response): 
   const dateDebut = debut ? new Date(debut as string) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
   const dateFin = fin ? new Date(fin as string) : new Date();
   
-  const stats = await analyticsService.getAffluenceParJour(
-    req.user!.restaurantId,
-    dateDebut,
-    dateFin
-  );
-  
-  res.json(stats);
+  try {
+    const stats = await analyticsService.getAffluenceParJour(
+      req.user!.restaurantId,
+      dateDebut,
+      dateFin
+    );
+    
+    res.json(stats);
+  } catch (error) {
+    console.error('Erreur lors de la récupération de l\'affluence:', error);
+    res.status(500).json({ error: 'Erreur lors de la récupération des données' });
+  }
 };
 
 export const getPerformanceTables = async (req: AuthRequest, res: Response): Promise<void> => {

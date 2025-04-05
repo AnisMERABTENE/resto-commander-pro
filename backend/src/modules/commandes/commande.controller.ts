@@ -13,9 +13,6 @@ export const createCommande = async (req: AuthRequest, res: Response): Promise<v
     req.body
   )
 
-  // La notification est désormais gérée dans le service
-  // getIO().to('CUISINIER').emit('commande:new', commande) 
-
   res.status(201).json(commande)
 }
 
@@ -41,13 +38,30 @@ export const updateStatut = async (req: AuthRequest, res: Response): Promise<voi
     return
   }
 
-  // 🔔 Notifie tous les serveurs connectés
-  getIO().to('SERVEUR').emit(`commande:${statut}`, commande)
+  const io = getIO()
+
+  // Notification générique pour tous les changements de statut
+  io.to('SERVEUR').emit(`commande:${statut}`, commande)
+
+  // Notifications spécifiques supplémentaires
+  switch(statut) {
+    case 'en_preparation':
+      io.to('SERVEUR').emit('commande:en_preparation', commande);
+      break;
+    case 'prete':
+      io.to('SERVEUR').emit('commande:prete', commande);
+      break;
+    case 'servie':
+      io.to('SERVEUR').emit('commande:servie', commande);
+      break;
+    case 'payée':
+      io.to('SERVEUR').emit('commande:payée', commande);
+      break;
+  }
 
   res.status(200).json(commande)
 }
 
-// Nouvelle fonction pour obtenir les détails d'une commande avec le total
 export const getCommandeDetails = async (req: AuthRequest, res: Response): Promise<void> => {
   const { id } = req.params;
   
