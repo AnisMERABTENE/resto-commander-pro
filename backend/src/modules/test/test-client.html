@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Client Test Socket.io</title>
+</head>
+<body>
+  <h1>👋 Client Socket.io - Test Commandes</h1>
+  <p id="status">Connexion...</p>
+
+  <p>
+    Rôle :
+    <select id="role-select">
+      <option value="CUISINIER">Cuisinier</option>
+      <option value="BARMAN">Barman</option>
+      <option value="SERVEUR">Serveur</option>
+      <option value="PATRON">Patron</option>
+    </select>
+    <button onclick="join()">Rejoindre</button>
+  </p>
+
+  <pre id="log"></pre>
+
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <script>
+    const socket = io('http://localhost:4000')
+
+    socket.on('connect', () => {
+      document.getElementById('status').textContent = '✅ Connecté'
+      log('🟢 Connecté avec id : ' + socket.id)
+    })
+
+    function join() {
+      const role = document.getElementById('role-select').value
+      socket.emit('join', role)
+      log('👤 Rejoint le rôle : ' + role)
+    }
+
+    // 🔔 Commande envoyée au CUISINIER ou BARMAN
+    socket.on('commande:new', (data) => {
+      log('🛎️ commande:new :\n' + JSON.stringify(data, null, 2))
+    })
+
+    // ✅ Commande reçue → affichée chez le SERVEUR
+    socket.on('commande:reçue', (data) => {
+      log('✅ commande:reçue :\n' + JSON.stringify(data, null, 2))
+    })
+
+    // ✅ Commande prête → affichée chez le SERVEUR
+    socket.on('commande:prete', (data) => {
+      log('🍽️ commande:prete :\n' + JSON.stringify(data, null, 2))
+    })
+    socket.on('stock:low', (data) => {
+      log('⚠️ stock:low :\n' + JSON.stringify(data, null, 2))
+   })
+
+    function log(msg) {
+      const logEl = document.getElementById('log')
+      logEl.textContent += msg + '\n\n'
+    }
+  </script>
+</body>
+</html>

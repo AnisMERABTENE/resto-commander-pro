@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: resto_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    restart: always
+    volumes:
+      - ./backend:/app
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://admin:admin@postgres:5432/resto_db
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:

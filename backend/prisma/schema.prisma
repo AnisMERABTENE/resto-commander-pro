@@ -1,0 +1,93 @@
+// prisma/schema.prisma
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id        String   @id @default(uuid())
+  nom       String
+  adresse   String?
+  logo      String?
+  createdAt DateTime @default(now())
+
+  users    User[]
+  tables   Table[]
+  produits Produit[]
+}
+
+model User {
+  id           String   @id @default(uuid())
+  restaurantId String
+  nom          String
+  email        String   @unique
+  passwordHash String
+  role         Role
+  createdAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+  commandes  Commande[] @relation("ServeurCommandes") // 👈 NOM À UTILISER AUSSI CÔTÉ COMMANDE
+}
+
+model Produit {
+  id             String            @id @default(uuid())
+  restaurantId   String
+  nom            String
+  description    String?
+  type           String // "plat", "boisson", "dessert"
+  prix           Float
+  stockTotal     Float // quantité totale dispo
+  unite          String // ex: "pièce", "Litre", "cl"
+  volumeUnitaire Float // ex: 0.5 pour une pinte
+  createdAt      DateTime          @default(now())
+  commandes      CommandeProduit[]
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model Table {
+  id           String     @id @default(uuid())
+  restaurantId String
+  nom          String
+  numero       Int
+  statut       String     @default("libre") // ou "occupée", etc.
+  createdAt    DateTime   @default(now())
+  commandes    Commande[]
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+}
+
+model Commande {
+  id        String   @id @default(uuid())
+  tableId   String
+  serveurId String
+  statut    String   @default("en_attente")
+  createdAt DateTime @default(now())
+
+  table    Table             @relation(fields: [tableId], references: [id])
+  serveur  User              @relation("ServeurCommandes", fields: [serveurId], references: [id]) // 👈 LIÉ À LA RELATION
+  produits CommandeProduit[]
+}
+
+model CommandeProduit {
+  id         String  @id @default(uuid())
+  commandeId String
+  produitId  String
+  quantite   Int
+  notes      String?
+
+  commande Commande @relation(fields: [commandeId], references: [id])
+  produit  Produit  @relation(fields: [produitId], references: [id])
+}
+
+enum Role {
+  PATRON
+  SERVEUR
+  BARMAN
+  CUISINIER
+}
