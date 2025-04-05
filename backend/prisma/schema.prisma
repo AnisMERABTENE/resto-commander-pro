@@ -42,6 +42,7 @@ model Produit {
   type           String // "plat", "boisson", "dessert"
   prix           Float
   stockTotal     Float // quantité totale dispo
+  stockMinimum   Float  @default(5) // NOUVEAU: seuil d'alerte
   unite          String // ex: "pièce", "Litre", "cl"
   volumeUnitaire Float // ex: 0.5 pour une pinte
   createdAt      DateTime          @default(now())
@@ -58,8 +59,19 @@ model Table {
   statut       String     @default("libre") // ou "occupée", etc.
   createdAt    DateTime   @default(now())
   commandes    Commande[]
+  occupations  TableOccupation[] 
 
   restaurant Restaurant @relation(fields: [restaurantId], references: [id])
+}
+model TableOccupation {
+  id               String    @id @default(uuid())
+  tableId          String
+  debutOccupation  DateTime  @default(now())
+  finOccupation    DateTime?
+  montantTotal     Float?
+  nombreClients    Int?
+  
+  table            Table     @relation(fields: [tableId], references: [id])
 }
 
 model Commande {
@@ -68,6 +80,11 @@ model Commande {
   serveurId String
   statut    String   @default("en_attente")
   createdAt DateTime @default(now())
+  preparationAt   DateTime?         // NOUVEAU
+  serviAt         DateTime?         // NOUVEAU
+  regleAt         DateTime?         // NOUVEAU
+  montantTotal    Float?            // NOUVEAU
+  
 
   table    Table             @relation(fields: [tableId], references: [id])
   serveur  User              @relation("ServeurCommandes", fields: [serveurId], references: [id]) // 👈 LIÉ À LA RELATION

@@ -1,6 +1,8 @@
 import app from './app'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
+import { initCronJobs } from './cron'; // NOUVEAU
+
 
 // Créer le serveur HTTP
 const server = createServer(app)
@@ -29,6 +31,7 @@ io.on('connection', (socket) => {
     console.log(`❌ Client disconnected: ${socket.id}`)
   })
 })
+initCronJobs(); // NOUVEAU
 
 // Lancer le serveur
 const PORT = process.env.PORT || 4000
